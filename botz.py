@@ -17,9 +17,10 @@ client = discord.Client(intents=intents)
 
 ajuda_txt = '''
 Boas! Bem-vindo à ajuda do botz - bot dos bubz!
-1.pede !ajuda
-2.faz uma !nota e diz quando queres ser lembrado. Exemplo:
-    - "!nota \"cortar o cabelo\" 6a feira"
+1. Na dúvida, pede uma !ajuda
+2. Para já podes fazer uma !nota e dizer quando queres ser lembrado.
+\t2.1.  Instruções: "!nota \"[mensagem com espaços]\" [dia da semana]"
+\t2.2.  Exemplo: "Bro faz aí uma !nota \"cortar o cabelo\" 6a feira"
 '''
 
 @client.event
@@ -35,7 +36,7 @@ async def on_message(message):
         await message.channel.send(ajuda_txt)
 
     if "!nota" in message.content:
-        datetime, nota, feedback_str = parser.parse_nota(message.content)
+        feedback_str = parser.parse_nota(message.content)
 
         await message.channel.send(feedback_str)
         

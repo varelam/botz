@@ -17,6 +17,8 @@ def convert_footer_to_dow(dow_footer):
         dow = 5
     elif(dow_footer=="domingo"):
         dow = 6
+    else:
+        raise Exception("A mensagem não termina num dia da semana válido!")
     return dow
 
 def convert_datetime_to_name(datetime):
@@ -51,25 +53,36 @@ def interpret_time(dow_footer):
 
 def parse_nota(message):
 
-    
     header = "!nota"
+    feedback_str = ""
+    try:
+        if(message.strip() == header):
+           raise Exception("A sua !nota está vazia")
 
-    # split original message, header might be in the middle, lets go to start
-    message_parts = message.split(header)
-    message_payload=message_parts[len(message_parts)-1].strip()
-    parts = message_payload.split()
+        # split original message, header might be in the middle, lets go to start
+        message_parts = message.split(header)
 
-    dow_footer = parts[len(parts)-1].strip()
-    nota  = message_payload.split(dow_footer); nota = nota[0].strip()
+        if(len(message_parts)>2):
+           raise Exception("Lamentamos mas só conseguimos uma nota de cada vez")
 
-    datetime = interpret_time(dow_footer)
-    output_format = "%d-%m"
-    formatted_datetime = datetime.strftime(output_format)
+        message_payload=message_parts[len(message_parts)-1].strip()
+        parts = message_payload.split()
 
-    feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**".format(nota,convert_datetime_to_name(datetime),formatted_datetime)
+        dow_footer = parts[len(parts)-1].strip()
+        nota  = message_payload.split(dow_footer); nota = nota[0].strip()
+
+        if(nota == ""):
+            raise Exception("A sua nota está vazia")
+
+        event_datetime = interpret_time(dow_footer)
+        output_format = "%d-%m"
+        formatted_datetime = event_datetime.strftime(output_format)
+        feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**".format(nota,convert_datetime_to_name(event_datetime),formatted_datetime)
+    except Exception as e:
+        feedback_str = "Houve um problema com a sua nota! O que se passou: " + str(e)
     
-    print(feedback_str)
-    return datetime, nota, feedback_str
+    print("!nota command received. Feedback: ",feedback_str)
+    return feedback_str
 
 
 # testing
