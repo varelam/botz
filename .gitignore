@@ -1,0 +1,5 @@
+.token
+.info
+.env
+.discord_env
+modules/__pycache__
