@@ -19,6 +19,8 @@ Boas! Bem-vindo à ajuda do botz - bot dos bubz!
 2. Para já podes fazer uma !nota e dizer quando queres ser lembrado.
 \t2.1.  Instruções: "!nota \"[mensagem com espaços]\" [dia da semana]"
 \t2.2.  Exemplo: "Bro faz aí uma !nota \"cortar o cabelo\" 6a feira"
+3. Podes listar os eventos todos com !lista
+4. Podes apagar os eventos com !cancelar [número do evento]
 '''
 
 @client.event
@@ -35,7 +37,14 @@ async def on_message(message):
 
     if "!nota" in message.content:
         feedback_str = parser.parse_nota(message.content)
+        await message.channel.send(feedback_str)
 
+    if "!lista" in message.content:
+        feedback_str = parser.list_notas()
+        await message.channel.send(feedback_str)
+
+    if message.content.startswith("!cancelar"):
+        feedback_str = parser.erase_nota(message.content)
         await message.channel.send(feedback_str)
         
 client.run(TOKEN)

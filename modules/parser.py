@@ -1,5 +1,5 @@
 import datetime
-import scheduling
+from modules import scheduling
 
 def convert_footer_to_dow(dow_footer):
     dow_footer = dow_footer.lower()
@@ -59,7 +59,6 @@ def interpret_time(dow_footer):
      
 
 def parse_nota(message):
-
     header = "!nota"
     feedback_str = ""
     try:
@@ -85,15 +84,54 @@ def parse_nota(message):
         output_format = "%d-%m"
         formatted_datetime = event_datetime.strftime(output_format)
 
-        scheduling.add_event(nota, formatted_datetime)
+        event_id = scheduling.add_event(nota, formatted_datetime)
 
-        feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**".format(nota,convert_datetime_to_name(event_datetime),formatted_datetime)
+        feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**. Para cancelar usar o comando !cancelar {}".format(nota,convert_datetime_to_name(event_datetime),formatted_datetime, event_id)
     except Exception as e:
         feedback_str = "Houve um problema com a sua nota! O que se passou: " + str(e)
     
     print("!nota command received. Feedback: ",feedback_str)
     return feedback_str
 
+#TODO: add days of week
+def list_notas():
+    try:
+        feedback_str = ""
+        json_data = scheduling.get_event_list()
+        for event_str, event in json_data.items():
+                event_number = -1
+                if(event_str.startswith("event_")):
+                    event_number = int(event_str.split('_')[1])
+                nota = event["nota"]
+                formatted_datetime = event["event_datetime"]
+                feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(event_number,nota,formatted_datetime)
+    except Exception as e:
+        feedback_str = "Houve um problema! O que se passou: " + str(e)
+
+    print("!lista command received. Feedback: ",feedback_str)
+    return feedback_str
+
+def erase_nota(message):
+    header = "!cancelar"
+    feedback_str = ""
+    try:
+        if(message.strip() == header):
+           raise Exception("O seu !cancelar precisa de um número de nota")
+
+        message_parts = message.split(header)
+        event_id=message_parts[len(message_parts)-1].strip()
+
+        if(event_id.isdigit()):
+            nota, formatted_datetime = scheduling.erase_event(event_id)
+        else:
+            raise Exception("O seu número de nota não é um número!")
+
+        feedback_str = "O evento número {}: **\"{}\"**, dia **{}**, foi cancelado com sucesso".format(event_id, nota, formatted_datetime)
+    except Exception as e:
+        feedback_str = "Houve um problema com o cancelamento da sua nota! O que se passou: " + str(e)
+
+    print("!cancelar command received. Feedback: ",feedback_str)
+    return feedback_str
 
 # testing
 # if __name__ == "__main__":
