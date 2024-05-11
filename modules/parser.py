@@ -132,16 +132,3 @@ def erase_nota(message):
 
     print("!cancelar command received. Feedback: ",feedback_str)
     return feedback_str
-
-# testing
-# if __name__ == "__main__":
-def test_parser():
-    test_message1 = "!nota cortar o cabelo 6a"
-    test_message2 = "bro faz ai uma bela de uma !nota estar com amigos sabado"
-    test_message3 = "!nota   aula de cerâmis  3a "
-
-    parse_nota(test_message1)
-    print()
-    parse_nota(test_message2)
-    print()
-    parse_nota(test_message3)
