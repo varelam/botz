@@ -18,7 +18,8 @@ Boas! Bem-vindo à ajuda do botz - bot dos bubz!
 1. Na dúvida, pede uma !ajuda
 2. Para já podes fazer uma !nota e dizer quando queres ser lembrado.
 \t2.1.  Instruções: "!nota \"[mensagem com espaços]\" [dia da semana]"
-\t2.2.  Exemplo: "Bro faz aí uma !nota \"cortar o cabelo\" 6a feira"
+\t2.2.  Exemplo: "!nota \"ir à cerâmica\" sábado"
+\t2.3.  Exemplo: "Bro faz aí uma !nota \"cortar o cabelo\" 6a"
 3. Podes listar os eventos todos com !lista
 4. Podes apagar os eventos com !cancelar [número do evento]
 '''
@@ -48,8 +49,3 @@ async def on_message(message):
         await message.channel.send(feedback_str)
         
 client.run(TOKEN)
-
-# if __name__ == "__main__":
-#     monitoring_thread = Thread(target=Scheduling.start_monitoring)
-#     monitoring_thread.start()
-#     monitoring_thread.join()
