@@ -1,17 +1,16 @@
 # botz.py
 import os
 import discord
+from discord.ext import commands, tasks
+import datetime
 from dotenv import load_dotenv
-from threading import Thread
 
 from modules import parser
+from modules import scheduling
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-intents = discord.Intents.default()
-intents.message_content = True
-
-client = discord.Client(intents=intents)
+CHANNEL_ID = os.getenv('CAMINHA_ID')
 
 ajuda_txt = '''
 Boas! Bem-vindo à ajuda do botz - bot dos bubz!
@@ -24,28 +23,46 @@ Boas! Bem-vindo à ajuda do botz - bot dos bubz!
 4. Podes apagar os eventos com !cancelar [número do evento]
 '''
 
-@client.event
-async def on_ready():
-    print(f'We have logged in as {client.user}')
+class Client(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+    async def setup_hook(self) -> None:
+        self.my_background_task.start()
 
-    if "!ajuda" in message.content:
-        await message.channel.send(ajuda_txt)
+    async def on_message(self, message):
+        if message.author.id == self.user.id:
+            return
+        if "!ajuda" in message.content:
+            print("ajuda")
+            await message.channel.send(ajuda_txt)
 
-    if "!nota" in message.content:
-        feedback_str = parser.parse_nota(message.content)
-        await message.channel.send(feedback_str)
+        if "!nota" in message.content:
+            feedback_str = parser.parse_nota(message.content)
+            await message.channel.send(feedback_str)
 
-    if "!lista" in message.content:
-        feedback_str = parser.list_notas()
-        await message.channel.send(feedback_str)
+        if "!lista" in message.content:
+            feedback_str = parser.list_notas()
+            await message.channel.send(feedback_str)
 
-    if message.content.startswith("!cancelar"):
-        feedback_str = parser.erase_nota(message.content)
-        await message.channel.send(feedback_str)
-        
+        if message.content.startswith("!cancelar"):
+            feedback_str = parser.erase_nota(message.content)
+            await message.channel.send(feedback_str)
+
+    @tasks.loop(seconds=60)
+    async def my_background_task(self):
+        now = datetime.datetime.now()
+        if now.hour == 20 and now.minute == 0:
+            message = scheduling.get_night_message()
+            channel = self.get_channel(int(CHANNEL_ID))
+            await channel.send(message)
+
+    @my_background_task.before_loop
+    async def before_my_task(self):
+        await self.wait_until_ready()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = Client(intents=intents)
 client.run(TOKEN)

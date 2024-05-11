@@ -48,7 +48,7 @@ def interpret_time(dow_footer):
     current_date = datetime.datetime.now()
     current_dow = current_date.weekday()
     next_dow = convert_footer_to_dow(dow_footer)
-    if (dow_footer == -1):
+    if (next_dow == -1):
         days_until_event = 0
     else:
         days_until_event = next_dow-current_dow
