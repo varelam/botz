@@ -84,6 +84,9 @@ def parse_nota(message):
         event_datetime = interpret_time(dow_footer)
         output_format = "%d-%m"
         formatted_datetime = event_datetime.strftime(output_format)
+
+        scheduling.add_event(nota, formatted_datetime)
+
         feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**".format(nota,convert_datetime_to_name(event_datetime),formatted_datetime)
     except Exception as e:
         feedback_str = "Houve um problema com a sua nota! O que se passou: " + str(e)
