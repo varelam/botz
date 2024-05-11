@@ -1,9 +1,12 @@
 import datetime
+import scheduling
 
 def convert_footer_to_dow(dow_footer):
     dow_footer = dow_footer.lower()
     dow=-1
-    if (dow_footer=="2a" or dow_footer== "segunda" or dow_footer== "2a-feira" or dow_footer== "segunda-feira"):
+    if(dow_footer=="hoje"):
+        dow=-1
+    elif (dow_footer=="2a" or dow_footer== "segunda" or dow_footer== "2a-feira" or dow_footer== "segunda-feira"):
         dow = 0
     elif(dow_footer=="3a" or dow_footer== "terca" or dow_footer== "terça" or dow_footer== "3a-feira" or dow_footer== "terca-feira" or dow_footer== "terça-feira"):
         dow = 1
@@ -45,9 +48,13 @@ def interpret_time(dow_footer):
     current_date = datetime.datetime.now()
     current_dow = current_date.weekday()
     next_dow = convert_footer_to_dow(dow_footer)
-    days_until_event = next_dow-current_dow
-    if(days_until_event<=0):
-        days_until_event=days_until_event+7
+    if (dow_footer == -1):
+        days_until_event = 0
+    else:
+        days_until_event = next_dow-current_dow
+        if(days_until_event<=0):
+            days_until_event=days_until_event+7
+
     return current_date + datetime.timedelta(days=days_until_event)
      
 

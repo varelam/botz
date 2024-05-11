@@ -3,3 +3,4 @@
 .env
 .discord_env
 modules/__pycache__
+sched.json
