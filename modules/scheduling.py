@@ -1,8 +1,6 @@
 import json
-import time
+import os
 import datetime
-import threading
-import discord
 
 sched_filename = "sched.json"
 
@@ -41,6 +39,10 @@ def compute_new_id(json_data):
     return new_id+1
 
 def add_event(nota, formatted_datetime):
+    if not os.path.exists(sched_filename):
+        with open(sched_filename, 'w') as file:
+            file.write('{}')
+
     with open(sched_filename, 'r') as file:
         json_data = json.load(file)
     
