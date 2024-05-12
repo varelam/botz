@@ -21,6 +21,7 @@ Boas! Bem-vindo à ajuda do botz - bot dos bubz!
 \t2.3.  Exemplo: "Bro faz aí uma !nota \"cortar o cabelo\" 6a"
 3. Podes listar os eventos todos com !lista
 4. Podes apagar os eventos com !cancelar [número do evento]
+\t4.1   Podes ainda !cancelar tudo - cuidado!
 '''
 
 def log(message):
@@ -47,19 +48,19 @@ class Client(discord.Client):
             log("!nota command received")
             feedback_str = parser.parse_nota(message.content)
             await message.channel.send(feedback_str)
-            log(feedback_str)
+            log("Reply: "+feedback_str)
 
         if "!lista" in message.content:
             log("!lista command received")
             feedback_str = parser.list_notas()
             await message.channel.send(feedback_str)
-            log(feedback_str)
+            log("Reply: "+feedback_str)
 
         if message.content.startswith("!cancelar"):
             log("!cancelar command received")
             feedback_str = parser.erase_nota(message.content)
             await message.channel.send(feedback_str)
-            log(feedback_str)
+            log("Reply: "+feedback_str)
 
     @tasks.loop(seconds=60)
     async def my_background_task(self):
