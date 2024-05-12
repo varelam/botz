@@ -23,6 +23,11 @@ Boas! Bem-vindo à ajuda do botz - bot dos bubz!
 4. Podes apagar os eventos com !cancelar [número do evento]
 '''
 
+def log(message):
+    now = datetime.datetime.now()
+    iso_now = now.strftime('%Y-%m-%d %H:%M:%S')
+    print("{} RUNTIME  {}".format(iso_now,message))
+
 class Client(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,34 +39,45 @@ class Client(discord.Client):
         if message.author.id == self.user.id:
             return
         if "!ajuda" in message.content:
-            print("ajuda")
+            log("!ajuda command received")
             await message.channel.send(ajuda_txt)
+            log("!ajuda command sent")
 
         if "!nota" in message.content:
+            log("!nota command received")
             feedback_str = parser.parse_nota(message.content)
             await message.channel.send(feedback_str)
+            log(feedback_str)
 
         if "!lista" in message.content:
+            log("!lista command received")
             feedback_str = parser.list_notas()
             await message.channel.send(feedback_str)
+            log(feedback_str)
 
         if message.content.startswith("!cancelar"):
+            log("!cancelar command received")
             feedback_str = parser.erase_nota(message.content)
             await message.channel.send(feedback_str)
+            log(feedback_str)
 
     @tasks.loop(seconds=60)
     async def my_background_task(self):
         now = datetime.datetime.now()
-        if now.hour == 8 and now.minute == 30:
-            message = scheduling.get_night_message()
-            channel = self.get_channel(int(CHANNEL_ID))
-            await channel.send(message)
         if now.hour == 7 and now.minute == 30:
             message = scheduling.get_morning_message()
             channel = self.get_channel(int(CHANNEL_ID))
             await channel.send(message)
+            log("Morning message sent")
+        if now.hour == 20 and now.minute == 30:
+            message = scheduling.get_night_message()
+            channel = self.get_channel(int(CHANNEL_ID))
+            await channel.send(message)
+            log("Night message sent")
         if now.hour == 0 and now.minute == 30:
+            log("Starting cleanup...")
             erase_log = scheduling.cleanup_events()
+            log(erase_log)
 
     @my_background_task.before_loop
     async def before_my_task(self):
