@@ -56,7 +56,6 @@ def interpret_time(dow_footer):
             days_until_event=days_until_event+7
 
     return current_date + datetime.timedelta(days=days_until_event)
-     
 
 def parse_nota(message):
     header = "!nota"
@@ -86,11 +85,14 @@ def parse_nota(message):
 
         event_id = scheduling.add_event(nota, formatted_datetime)
 
-        feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**. Para cancelar usar o comando !cancelar {}".format(nota,convert_datetime_to_name(event_datetime),formatted_datetime, event_id)
+        feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**. Para cancelar usar o comando !cancelar {}".format(
+            nota,convert_datetime_to_name(event_datetime),
+            formatted_datetime,
+            event_id
+            )
     except Exception as e:
         feedback_str = "Houve um problema com a sua nota! O que se passou: " + str(e)
     
-    print("!nota command received. Feedback: ",feedback_str)
     return feedback_str
 
 #TODO: add days of week
@@ -104,11 +106,13 @@ def list_notas():
                     event_number = int(event_str.split('_')[1])
                 nota = event["nota"]
                 formatted_datetime = event["event_datetime"]
-                feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(event_number,nota,formatted_datetime)
+                feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(
+                    event_number,
+                    nota,
+                    formatted_datetime
+                    )
     except Exception as e:
         feedback_str = "Houve um problema! O que se passou: " + str(e)
-
-    print("!lista command received. Feedback: ",feedback_str)
     return feedback_str
 
 def erase_nota(message):
@@ -126,9 +130,12 @@ def erase_nota(message):
         else:
             raise Exception("O seu número de nota não é um número!")
 
-        feedback_str = "O evento número {}: **\"{}\"**, dia **{}**, foi cancelado com sucesso".format(event_id, nota, formatted_datetime)
+        feedback_str = "O evento número {}: **\"{}\"**, dia **{}**, foi cancelado com sucesso".format(
+            event_id,
+            nota,
+            formatted_datetime
+            )
     except Exception as e:
         feedback_str = "Houve um problema com o cancelamento da sua nota! O que se passou: " + str(e)
 
-    print("!cancelar command received. Feedback: ",feedback_str)
     return feedback_str

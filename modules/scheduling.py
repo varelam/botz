@@ -4,11 +4,14 @@ import datetime
 
 sched_filename = "sched.json"
 
-def get_night_message():
+def parse_events_by_day(lower_bound_days, upper_bound_days):
     json_data = get_event_list()
     date_format = "%d-%m"
     current_year = datetime.datetime.now().year
-    message = ""
+
+    event_nr_list = []
+    nota_list = []
+    formatted_datetime_list = []
     for event_str, event in json_data.items():
         event_number = -1
         if(event_str.startswith("event_")):
@@ -19,14 +22,38 @@ def get_night_message():
             date_obj = date_obj.replace(year=current_year)
             current_time = datetime.datetime.now()
             time_difference = (date_obj - current_time)
-            if 0 <= time_difference.days < 1:
-                message = message + "Nota **{}**: **\"{}\"**, no dia **{}**\n".format(event_number,nota,formatted_datetime)
+            if lower_bound_days <= time_difference.days <= upper_bound_days:
+                event_nr_list.append(event_number)
+                nota_list.append(nota)
+                formatted_datetime_list.append(formatted_datetime)
+    return event_nr_list, nota_list, formatted_datetime_list
 
-    if len(message):
-        message = "Boas! Não esquecer o que há para fazer amanhã!\n" + message + "\nBons soninhos!"
+def build_reminder_message(event_nr_list, nota_list, formatted_datetime_list):
+    message = ""
+    for i in range(len(event_nr_list)):
+        message = message + "Nota **{}**: **\"{}\"**, no dia **{}**\n".format(
+            event_nr_list[i],nota_list[i],formatted_datetime_list[i]
+            )
+    return message
+
+def get_morning_message():
+    event_nr_list, nota_list, formatted_datetime_list = parse_events_by_day(0, 0)
+    if len(event_nr_list):
+        message = "Bom dia! Não esquecer o que há para fazer hoje!\n"
+        message = message + build_reminder_message(event_nr_list, nota_list, formatted_datetime_list)
+        message = message + "\nEstá na hora de sair da camita!"
     else:
-        message = "Boas! Hoje não há eventos para amanhã!"
+        message = "Boas! Hoje não há eventos para hoje, podes ficar na camita!"
+    return message
 
+def get_night_message():
+    event_nr_list, nota_list, formatted_datetime_list = parse_events_by_day(1, 1)
+    if len(event_nr_list):
+        message = "Boas! Não esquecer o que há para fazer amanhã!\n"
+        message = message + build_reminder_message(event_nr_list, nota_list, formatted_datetime_list)
+        message = message + "\nHora de ir para a camita! Bons soninhos!"
+    else:
+        message = "Boas! Hoje não há eventos para amanhã! Karty kime :sunglasses:"
     return message
 
 def compute_new_id(json_data):
@@ -39,13 +66,7 @@ def compute_new_id(json_data):
     return new_id+1
 
 def add_event(nota, formatted_datetime):
-    if not os.path.exists(sched_filename):
-        with open(sched_filename, 'w') as file:
-            file.write('{}')
-
-    with open(sched_filename, 'r') as file:
-        json_data = json.load(file)
-    
+    json_data = get_event_list()
     latest_id = compute_new_id(json_data)
     event_key = "event_" + str(latest_id)
 
@@ -55,21 +76,26 @@ def add_event(nota, formatted_datetime):
     json_data[event_key]
     json_data[event_key]["nota"] = nota
     json_data[event_key]["event_datetime"] = formatted_datetime
-
-    with open('sched.json', 'w') as file:
-        json.dump(json_data, file, indent=4)
-
+    commit_file(json_data)
     return latest_id
 
 def get_event_list():
+    if not os.path.exists(sched_filename):
+        with open(sched_filename, 'w') as file:
+            file.write('{}')
     with open(sched_filename, 'r') as file:
         json_data = json.load(file)
-
     return json_data
 
+def commit_file(json_data):
+    if not os.path.exists(sched_filename):
+        with open(sched_filename, 'w') as file:
+            file.write('{}')
+    with open(sched_filename, 'w') as file:
+        json.dump(json_data, file, indent=4)
+
 def erase_event(event_id):
-    with open(sched_filename, 'r') as file:
-        json_data = json.load(file)
+    json_data = get_event_list()
 
     event_key = "event_" + str(event_id)
     if event_key not in json_data:
@@ -79,7 +105,18 @@ def erase_event(event_id):
         formatted_datetime = json_data[event_key]["event_datetime"]
         del json_data[event_key]
 
-    with open('sched.json', 'w') as file:
-        json.dump(json_data, file, indent=4)
-
+    commit_file(json_data)
     return nota, formatted_datetime
+
+def cleanup_events():
+    erase_log = ""
+    events_to_erase, _, formatted_datetime = parse_events_by_day(-365, -2)
+    json_data = get_event_list()
+    for i in range(len(events_to_erase)):
+        event_str = "event_" + str(events_to_erase[i])
+        del json_data[event_str]
+        erase_log = erase_log + "Erased \"{}\" at {}. ".format(
+            event_str,
+            formatted_datetime[i])
+    commit_file(json_data)
+    return erase_log

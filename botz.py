@@ -52,10 +52,16 @@ class Client(discord.Client):
     @tasks.loop(seconds=60)
     async def my_background_task(self):
         now = datetime.datetime.now()
-        if now.hour == 20 and now.minute == 0:
+        if now.hour == 8 and now.minute == 30:
             message = scheduling.get_night_message()
             channel = self.get_channel(int(CHANNEL_ID))
             await channel.send(message)
+        if now.hour == 7 and now.minute == 30:
+            message = scheduling.get_morning_message()
+            channel = self.get_channel(int(CHANNEL_ID))
+            await channel.send(message)
+        if now.hour == 0 and now.minute == 30:
+            erase_log = scheduling.cleanup_events()
 
     @my_background_task.before_loop
     async def before_my_task(self):
