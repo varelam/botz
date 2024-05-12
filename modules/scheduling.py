@@ -120,3 +120,7 @@ def cleanup_events():
             formatted_datetime[i])
     commit_file(json_data)
     return erase_log
+
+def erase_all():
+    json_data = {}
+    commit_file(json_data)

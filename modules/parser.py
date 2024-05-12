@@ -127,6 +127,9 @@ def erase_nota(message):
 
         if(event_id.isdigit()):
             nota, formatted_datetime = scheduling.erase_event(event_id)
+        elif (event_id == "todas" or event_id == "tudo"):
+            scheduling.erase_all()
+            return "Todos os eventos foram apagados!"
         else:
             raise Exception("O seu número de nota não é um número!")
 
