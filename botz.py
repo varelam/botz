@@ -15,9 +15,9 @@ CHANNEL_ID = os.getenv('CAMINHA_ID')
 ajuda_txt = '''
 Boas! Bem-vindo à ajuda do botz - bot dos bubz!
 1. Na dúvida, pede uma !ajuda
-2. Para já podes fazer uma !nota e dizer quando queres ser lembrado.
-\t2.1.  Instruções: "!nota \"[mensagem com espaços]\" [dia da semana]"
-\t2.2.  Exemplo: "!nota \"ir à cerâmica\" sábado"
+2. Para já podes fazer uma !nota e dizer quando queres ser lembrado\n
+\t2.1.  Instruções: "!nota \"[mensagem com espaços]\" [dia da semana]"\n
+\t2.2.  Exemplo: "!nota \"ir à cerâmica\" sábado"\n
 \t2.3.  Exemplo: "Bro faz aí uma !nota \"cortar o cabelo\" 6a"
 3. Podes listar os eventos todos com !lista
 4. Podes apagar os eventos com !cancelar [número do evento]
@@ -62,6 +62,12 @@ class Client(discord.Client):
             await message.channel.send(feedback_str)
             log("Reply: "+feedback_str)
 
+        if message.content.startswith("!streak"):
+            log("!streak command received")
+            feedback_str = parser.update_streak(message.content)
+            await message.channel.send(feedback_str)
+            log("Reply: "+feedback_str)
+
     @tasks.loop(seconds=60)
     async def my_background_task(self):
         now = datetime.datetime.now()
@@ -75,6 +81,10 @@ class Client(discord.Client):
             channel = self.get_channel(int(CHANNEL_ID))
             await channel.send(message)
             log("Night message sent")
+        if now.hour == 23 and now.minute == 50:
+            log("Testing streaks...")
+            feedback_str = scheduling.test_streaks()
+            log(feedback_str)
         if now.hour == 0 and now.minute == 30:
             log("Starting cleanup...")
             erase_log = scheduling.cleanup_events()

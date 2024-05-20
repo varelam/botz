@@ -5,7 +5,7 @@ import datetime
 sched_filename = "sched.json"
 
 def parse_events_by_day(lower_bound_days, upper_bound_days):
-    json_data = get_event_list()
+    json_data = get_sched()
     date_format = "%d-%m"
     current_year = datetime.datetime.now().year
 
@@ -43,7 +43,7 @@ def get_morning_message():
         message = message + build_reminder_message(event_nr_list, nota_list, formatted_datetime_list)
         message = message + "\nEstá na hora de sair da camita!"
     else:
-        message = "Boas! Hoje não há eventos para hoje, podes ficar na camita!"
+        message = "Bom dia senhores bubz! Espero que tenham um dia muito lindo sem tarefas!"
     return message
 
 def get_night_message():
@@ -66,7 +66,7 @@ def compute_new_id(json_data):
     return new_id+1
 
 def add_event(nota, formatted_datetime):
-    json_data = get_event_list()
+    json_data = get_sched()
     latest_id = compute_new_id(json_data)
     event_key = "event_" + str(latest_id)
 
@@ -79,7 +79,69 @@ def add_event(nota, formatted_datetime):
     commit_file(json_data)
     return latest_id
 
-def get_event_list():
+def increment_streak(topic, formatted_datetime):
+    json_data = get_sched()
+    if "streaks" not in json_data:
+        json_data["streaks"] = {}
+
+    streaks = json_data["streaks"]
+    days = 0
+    streak_freezes = 0
+    if topic not in streaks:
+        json_data["streaks"][topic] = {}
+    else:
+        days = int(json_data["streaks"][topic]["days"])
+        streak_freezes = int(json_data["streaks"][topic]["streak_freezes"])
+        prev_formatted_time = json_data["streaks"][topic]["last_update"]
+
+    if(prev_formatted_time != formatted_datetime):
+        days = days+1
+    else:
+        return -1
+
+    if((days % 15) == 0 and streak_freezes < 5):
+        streak_freezes = streak_freezes+1
+
+    json_data["streaks"][topic]["days"] = days
+    json_data["streaks"][topic]["streak_freezes"] = streak_freezes
+    json_data["streaks"][topic]["last_update"] = formatted_datetime
+    commit_file(json_data)
+    return days
+
+def test_streaks():
+    json_data = get_sched()
+    date_format = "%d-%m"
+    message = ""
+    if "streaks" not in json_data:
+        json_data["streaks"] = {}
+        return "Não há streaks no calendário..."
+
+    streaks = json_data["streaks"]
+    current_year = datetime.datetime.now().year
+    for key, topic in streaks.items():
+        formatted_datetime = topic["last_update"]
+        days = topic["days"]
+        streak_freezes = topic["streak_freezes"]
+        date_obj = datetime.datetime.strptime(formatted_datetime, date_format)
+        date_obj = date_obj.replace(year=current_year)
+        current_time = datetime.datetime.now()
+        time_difference = (date_obj - current_time)
+        if time_difference.days < -1:
+            if streak_freezes > 0:
+                streak_freezes = streak_freezes-1
+                message = message + "Usou um streak freeze na streak {}!\n".format(key)
+            else:
+                days=0
+                streak_freezes=0
+                message = message + "Perdeste o streak de {}!!!!\n".format(key)
+        else:
+            message = message + "Esta streak de {} está muito rija\n".format(key)
+        json_data["streaks"][key]["days"] = days
+        json_data["streaks"][key]["streak_freezes"] = streak_freezes
+    commit_file(json_data)
+    return message
+
+def get_sched():
     if not os.path.exists(sched_filename):
         with open(sched_filename, 'w') as file:
             file.write('{}')
@@ -95,7 +157,7 @@ def commit_file(json_data):
         json.dump(json_data, file, indent=4)
 
 def erase_event(event_id):
-    json_data = get_event_list()
+    json_data = get_sched()
 
     event_key = "event_" + str(event_id)
     if event_key not in json_data:
@@ -111,7 +173,7 @@ def erase_event(event_id):
 def cleanup_events():
     erase_log = ""
     events_to_erase, _, formatted_datetime = parse_events_by_day(-365, -2)
-    json_data = get_event_list()
+    json_data = get_sched()
     for i in range(len(events_to_erase)):
         event_str = "event_" + str(events_to_erase[i])
         del json_data[event_str]

@@ -142,3 +142,30 @@ def erase_nota(message):
         feedback_str = "Houve um problema com o cancelamento da sua nota! O que se passou: " + str(e)
 
     return feedback_str
+
+def update_streak(message):
+    header = "!streak"
+    feedback_str = ""
+    try:
+        if(message.strip() == header):
+           raise Exception("A sua !streak precisa de um tópico! Exemplo: !streak sax")
+
+        message_parts = message.split(header)
+        topic=message_parts[len(message_parts)-1].strip()
+
+        streak_datetime = interpret_time("hoje")
+        output_format = "%d-%m"
+        formatted_datetime = streak_datetime.strftime(output_format)
+        days = scheduling.increment_streak(topic, formatted_datetime)
+
+        if days > 0:
+            feedback_str = "Renovamos a sua streak de {}! Já vai em {} dias! :fire:".format(
+                topic,
+                days
+                )
+        else:
+            feedback_str = "Já renovaste a streak de {} hoje!!! Tenta amanhã outra vez :sweat_smile:".format(topic)
+    except Exception as e:
+        feedback_str = "Houve um problema com a sua streak! O que se passou: " + str(e)
+
+    return feedback_str
