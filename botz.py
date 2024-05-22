@@ -76,15 +76,16 @@ class Client(discord.Client):
             channel = self.get_channel(int(CHANNEL_ID))
             await channel.send(message)
             log("Morning message sent")
-        if now.hour == 20 and now.minute == 30:
+        if now.hour == 21 and now.minute == 30:
             message = scheduling.get_night_message()
             channel = self.get_channel(int(CHANNEL_ID))
             await channel.send(message)
             log("Night message sent")
         if now.hour == 23 and now.minute == 50:
             log("Testing streaks...")
-            feedback_str = scheduling.test_streaks()
-            log(feedback_str)
+            message = scheduling.test_streaks()
+            await channel.send(message)
+            log(message)
         if now.hour == 0 and now.minute == 30:
             log("Starting cleanup...")
             erase_log = scheduling.cleanup_events()

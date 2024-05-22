@@ -129,13 +129,12 @@ def test_streaks():
         if time_difference.days < -1:
             if streak_freezes > 0:
                 streak_freezes = streak_freezes-1
-                message = message + "Usou um streak freeze na streak {}!\n".format(key)
+                message = message + "Usou um streak freeze na streak de {}!\n".format(key)
             else:
                 days=0
                 streak_freezes=0
-                message = message + "Perdeste o streak de {}!!!!\n".format(key)
-        else:
-            message = message + "Esta streak de {} está muito rija\n".format(key)
+                message = message + "Perdeste a streak de {}!!!!\n".format(key)
+
         json_data["streaks"][key]["days"] = days
         json_data["streaks"][key]["streak_freezes"] = streak_freezes
     commit_file(json_data)
