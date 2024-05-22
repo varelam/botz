@@ -21,7 +21,7 @@ def parse_events_by_day(lower_bound_days, upper_bound_days):
             date_obj = datetime.datetime.strptime(formatted_datetime, date_format)
             date_obj = date_obj.replace(year=current_year)
             current_time = datetime.datetime.now()
-            time_difference = (date_obj - current_time)
+            time_difference = (date_obj - current_time) + 1
             if lower_bound_days <= time_difference.days <= upper_bound_days:
                 event_nr_list.append(event_number)
                 nota_list.append(nota)
