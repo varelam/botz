@@ -84,6 +84,7 @@ class Client(discord.Client):
         if now.hour == 23 and now.minute == 50:
             log("Testing streaks...")
             message = scheduling.test_streaks()
+            channel = self.get_channel(int(CHANNEL_ID))
             await channel.send(message)
             log(message)
         if now.hour == 0 and now.minute == 30:

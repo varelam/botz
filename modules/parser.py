@@ -99,7 +99,7 @@ def parse_nota(message):
 def list_notas():
     try:
         feedback_str = ""
-        json_data = scheduling.get_event_list()
+        json_data = scheduling.get_sched()
         for event_str, event in json_data.items():
                 event_number = -1
                 if(event_str.startswith("event_")):
