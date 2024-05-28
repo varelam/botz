@@ -28,6 +28,12 @@ def log(message):
     now = datetime.datetime.now()
     iso_now = now.strftime('%Y-%m-%d %H:%M:%S')
     print("{} RUNTIME  {}".format(iso_now,message))
+    log_filename = "botz.log"
+    if not os.path.exists(log_filename):
+        with open(log_filename, 'w') as file:
+            file.write('')
+    with open(log_filename, 'a') as file:
+        file.write("{} RUNTIME  {}".format(iso_now,message))
 
 class Client(discord.Client):
     def __init__(self, *args, **kwargs):
