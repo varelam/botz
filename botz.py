@@ -33,7 +33,7 @@ def log(message):
         with open(log_filename, 'w') as file:
             file.write('')
     with open(log_filename, 'a') as file:
-        file.write("{} RUNTIME  {}".format(iso_now,message))
+        file.write("{} RUNTIME  {}\n".format(iso_now,message))
 
 class Client(discord.Client):
     def __init__(self, *args, **kwargs):
