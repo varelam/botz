@@ -71,7 +71,8 @@ class Client(discord.Client):
         if message.content.startswith("!streak"):
             log("!streak command received")
             feedback_str = parser.update_streak(message.content)
-            await message.channel.send(feedback_str)
+            if len(feedback_str):
+                await message.channel.send(feedback_str)
             log("Reply: "+feedback_str)
 
     @tasks.loop(seconds=60)
