@@ -104,13 +104,13 @@ def list_notas():
                 event_number = -1
                 if(event_str.startswith("event_")):
                     event_number = int(event_str.split('_')[1])
-                nota = event["nota"]
-                formatted_datetime = event["event_datetime"]
-                feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(
-                    event_number,
-                    nota,
-                    formatted_datetime
-                    )
+                    nota = event["nota"]
+                    formatted_datetime = event["event_datetime"]
+                    feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(
+                        event_number,
+                        nota,
+                        formatted_datetime
+                        )
     except Exception as e:
         feedback_str = "Houve um problema! O que se passou: " + str(e)
     return feedback_str
