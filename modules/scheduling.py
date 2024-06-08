@@ -53,7 +53,7 @@ def get_night_message():
         message = message + build_reminder_message(event_nr_list, nota_list, formatted_datetime_list)
         message = message + "\nHora de ir para a camita! Bons soninhos!"
     else:
-        message = "Boas! Hoje não há eventos para amanhã! Karty kime :sunglasses:"
+        message = "Boas! Não há eventos para amanhã! Karty kime :sunglasses:"
     return message
 
 def compute_new_id(json_data):
