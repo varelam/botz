@@ -1,5 +1,6 @@
 # botz.py
 import os
+import asyncio
 import discord
 from discord.ext import commands, tasks
 import datetime
@@ -11,6 +12,7 @@ from modules import scheduling
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 CHANNEL_ID = os.getenv('CAMINHA_ID')
+WAIT_UNTIL_READY_TIMEOUT = 300.0  # 5 minutes
 
 ajuda_txt = '''
 Boas! Bem-vindo à ajuda do botz - bot dos bubz!
@@ -105,7 +107,23 @@ class Client(discord.Client):
 
     @my_background_task.before_loop
     async def before_my_task(self):
-        await self.wait_until_ready()
+        while True:
+            try:
+                if self.is_ready():
+                    log("wait_until_ready: already ready")
+                    break
+                ready = self.wait_for("ready", timeout=WAIT_UNTIL_READY_TIMEOUT)
+                resumed = self.wait_for("resumed", timeout=WAIT_UNTIL_READY_TIMEOUT)
+                await asyncio.wait([ready, resumed], return_when=asyncio.FIRST_COMPLETED)
+                ready.close()
+                resumed.close()
+                log("wait_until_ready: ready or resumed")
+                break
+            except TimeoutError:
+                log("wait_until_ready: timeout waiting for ready or resumed")
+                break
+            except BaseException as e:
+                log("error: exception in task before loop: %s", e)
 
 intents = discord.Intents.default()
 intents.message_content = True
