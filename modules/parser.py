@@ -1,61 +1,74 @@
 import datetime
+from enum import IntEnum
 from modules import scheduling
+
+class Week(IntEnum):
+    EMPTY = -2
+    TODAY = -1
+    MON = 0
+    TUE = 1
+    WED = 2
+    THU = 3
+    FRI = 4
+    SAT = 5
+    SUN = 6
 
 def convert_footer_to_dow(dow_footer):
     dow_footer = dow_footer.lower()
-    dow=-1
+    dow=Week.EMPTY
     if(dow_footer=="hoje"):
-        dow=-1
+        dow= Week.TODAY
     elif (dow_footer=="2a" or dow_footer== "segunda" or dow_footer== "2a-feira" or dow_footer== "segunda-feira"):
-        dow = 0
+        dow = Week.MON
     elif(dow_footer=="3a" or dow_footer== "terca" or dow_footer== "terça" or dow_footer== "3a-feira" or dow_footer== "terca-feira" or dow_footer== "terça-feira"):
-        dow = 1
+        dow = Week.TUE
     elif(dow_footer=="4a" or dow_footer== "quarta" or dow_footer== "4a-feira" or dow_footer== "quarta-feira"):
-        dow = 2
+        dow = Week.WED
     elif(dow_footer=="5a" or dow_footer== "quinta" or dow_footer== "5a-feira" or dow_footer== "quinta-feira"):
-        dow = 3
+        dow = Week.THU
     elif(dow_footer=="6a" or dow_footer== "sexta" or dow_footer== "6a-feira" or dow_footer== "sexta-feira"):
-        dow = 4
+        dow = Week.FRI
     elif(dow_footer=="sabado" or dow_footer== "sábado"):
-        dow = 5
+        dow = Week.SAT
     elif(dow_footer=="domingo"):
-        dow = 6
+        dow = Week.SUN
     else:
-        raise Exception("A mensagem não termina num dia da semana válido!")
+        dow= Week.EMPTY
+
     return dow
 
-def convert_datetime_to_name(datetime):
-    dow = datetime.weekday()
-    weekday = ""
-    if(dow==0):
-        weekday="2a feira"
-    elif(dow==1):
-        weekday="3a feira"
-    elif(dow==2):
-        weekday="4a feira"
-    elif(dow==3):
-        weekday="5a feira"
-    elif(dow==4):
-        weekday="6a feira"
-    elif(dow==5):
-        weekday="Sábado"
-    elif(dow==6):
-        weekday="Domingo"
+def convert_weekday_to_str(weekday):
+    weekday_str = ""
+    if(weekday==Week.MON):
+        weekday_str="2a feira"
+    elif(weekday==Week.TUE):
+        weekday_str="3a feira"
+    elif(weekday==Week.WED):
+        weekday_str="4a feira"
+    elif(weekday==Week.THU):
+        weekday_str="5a feira"
+    elif(weekday==Week.FRI):
+        weekday_str="6a feira"
+    elif(weekday==Week.SAT):
+        weekday_str="Sábado"
+    elif(weekday==Week.SUN):
+        weekday_str="Domingo"
 
-    return weekday
+    return weekday_str
 
-def interpret_time(dow_footer):
+def interpret_time(nota_dow):
     current_date = datetime.datetime.now()
     current_dow = current_date.weekday()
-    next_dow = convert_footer_to_dow(dow_footer)
-    if (next_dow == -1):
+    if (nota_dow == Week.TODAY):
         days_until_event = 0
     else:
-        days_until_event = next_dow-current_dow
+        days_until_event = nota_dow-current_dow
         if(days_until_event<=0):
             days_until_event=days_until_event+7
 
-    return current_date + datetime.timedelta(days=days_until_event)
+    event_datetime = current_date + datetime.timedelta(days=days_until_event)
+    weekday = event_datetime.weekday()
+    return event_datetime, weekday
 
 def parse_nota(message):
     header = "!nota"
@@ -74,22 +87,27 @@ def parse_nota(message):
         parts = message_payload.split()
 
         dow_footer = parts[len(parts)-1].strip()
-        nota  = message_payload.split(dow_footer); nota = nota[0].strip()
-
+        nota  = message_payload.split(dow_footer);
         if(nota == ""):
             raise Exception("A sua nota está vazia")
 
-        event_datetime = interpret_time(dow_footer)
-        output_format = "%d-%m"
-        formatted_datetime = event_datetime.strftime(output_format)
-
-        event_id = scheduling.add_event(nota, formatted_datetime)
-
-        feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**. Para cancelar usar o comando !cancelar {}".format(
-            nota,convert_datetime_to_name(event_datetime),
-            formatted_datetime,
-            event_id
-            )
+        nota = nota[0].strip()
+        nota_dow = convert_footer_to_dow(dow_footer)
+        if nota_dow == Week.EMPTY:
+            nota = nota + " " + dow_footer
+            event_id = scheduling.add_event(nota, "")
+            feedback_str = "Agendei a seguinte nota: **\"{}\"**. Para cancelar usar o comando !cancelar {}".format(nota, event_id)
+        else:
+            event_datetime, weekday = interpret_time(nota_dow)
+            output_format = "%d-%m"
+            formatted_datetime = event_datetime.strftime(output_format)
+            weekday_str = convert_weekday_to_str(weekday)
+            event_id = scheduling.add_event(nota, formatted_datetime)
+            feedback_str = "Agendei a seguinte nota: **\"{}\"** para **{}, dia {}**. Para cancelar usar o comando !cancelar {}".format(
+                nota, weekday_str,
+                formatted_datetime,
+                event_id
+                )
     except Exception as e:
         feedback_str = "Houve um problema com a sua nota! O que se passou: " + str(e)
     
@@ -106,11 +124,24 @@ def list_notas():
                     event_number = int(event_str.split('_')[1])
                     nota = event["nota"]
                     formatted_datetime = event["event_datetime"]
-                    feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(
-                        event_number,
-                        nota,
-                        formatted_datetime
-                        )
+                    if len(formatted_datetime):
+                        feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**, no dia **{}**".format(
+                            event_number,
+                            nota,
+                            formatted_datetime
+                            )
+
+        for event_str, event in json_data.items():
+                event_number = -1
+                if(event_str.startswith("event_")):
+                    event_number = int(event_str.split('_')[1])
+                    nota = event["nota"]
+                    formatted_datetime = event["event_datetime"]
+                    if len(formatted_datetime) == 0:
+                        feedback_str = feedback_str + "\nNota **{}**: **\"{}\"**".format(
+                            event_number,
+                            nota)
+
     except Exception as e:
         feedback_str = "Houve um problema! O que se passou: " + str(e)
     return feedback_str
@@ -133,11 +164,16 @@ def erase_nota(message):
         else:
             raise Exception("O seu número de nota não é um número!")
 
-        feedback_str = "O evento número {}: **\"{}\"**, dia **{}**, foi cancelado com sucesso".format(
-            event_id,
-            nota,
-            formatted_datetime
-            )
+        if len(formatted_datetime):
+            feedback_str = "O evento número {}: **\"{}\"**, dia **{}**, foi cancelado com sucesso".format(
+                event_id,
+                nota,
+                formatted_datetime
+                )
+        else:
+            feedback_str = "A nota número {}: **\"{}\"**, foi cancelada com sucesso".format(
+                event_id, nota)
+
     except Exception as e:
         feedback_str = "Houve um problema com o cancelamento da sua nota! O que se passou: " + str(e)
 

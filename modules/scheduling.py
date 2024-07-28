@@ -18,14 +18,15 @@ def parse_events_by_day(lower_bound_days, upper_bound_days):
             event_number = int(event_str.split('_')[1])
             nota = event["nota"]
             formatted_datetime = event["event_datetime"]
-            date_obj = datetime.datetime.strptime(formatted_datetime, date_format)
-            date_obj = date_obj.replace(year=current_year)
-            current_time = datetime.datetime.now()
-            time_difference = (date_obj - current_time)
-            if (lower_bound_days-1) <= time_difference.days<= (upper_bound_days-1):
-                event_nr_list.append(event_number)
-                nota_list.append(nota)
-                formatted_datetime_list.append(formatted_datetime)
+            if len(formatted_datetime):
+                date_obj = datetime.datetime.strptime(formatted_datetime, date_format)
+                date_obj = date_obj.replace(year=current_year)
+                current_time = datetime.datetime.now()
+                time_difference = (date_obj - current_time)
+                if (lower_bound_days-1) <= time_difference.days<= (upper_bound_days-1):
+                    event_nr_list.append(event_number)
+                    nota_list.append(nota)
+                    formatted_datetime_list.append(formatted_datetime)
     return event_nr_list, nota_list, formatted_datetime_list
 
 def build_reminder_message(event_nr_list, nota_list, formatted_datetime_list):
