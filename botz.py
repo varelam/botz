@@ -75,6 +75,10 @@ class Client(discord.Client):
                 await message.channel.send(feedback_str)
             log("Reply: "+feedback_str)
 
+        if message.content.startswith("!reboot"):
+            log("!reboot command received")
+            exit(0)
+
     @tasks.loop(seconds=60)
     async def my_background_task(self):
         now = datetime.datetime.now()
